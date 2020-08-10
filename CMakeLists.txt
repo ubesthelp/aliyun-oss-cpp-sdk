@@ -28,8 +28,6 @@ set(TARGET_OUTPUT_NAME_PREFIX "alibabacloud-oss-" CACHE STRING "The target's out
 
 #Options
 option(BUILD_SHARED_LIBS  "Enable shared library" OFF)
-option(BUILD_SAMPLE "Build sample" ON)
-option(BUILD_TESTS "Build unit and perfermence tests" OFF)
 option(ENABLE_COVERAGE "Flag to enable/disable building code with -fprofile-arcs and -ftest-coverage. Gcc only" OFF)
 option(ENABLE_RTTI "Flag to enable/disable building code with RTTI information" ON)
 
@@ -62,44 +60,27 @@ message(STATUS "TARGET_OS: ${TARGET_OS}")
 add_definitions(-DPLATFORM_${TARGET_OS})
 
 #Find dependency Library, curl, openssl
-if (${TARGET_OS} STREQUAL "WINDOWS")
-	set(WLIB_TARGET "Win32")
-	if (CMAKE_CL_64)
-	set(WLIB_TARGET "x64")
-	endif()
-	set(CRYPTO_LIBS 
-		${CMAKE_SOURCE_DIR}/third_party/lib/${WLIB_TARGET}/ssleay32.lib 
-		${CMAKE_SOURCE_DIR}/third_party/lib/${WLIB_TARGET}/libeay32.lib)
-	set(CRYPTO_INCLUDE_DIRS 
-		${CMAKE_SOURCE_DIR}/third_party/include) 
+find_package(CURL CONFIG REQUIRED)
+find_package(OpenSSL REQUIRED)
 
-	set(CLIENT_LIBS 
-		${CMAKE_SOURCE_DIR}/third_party/lib/${WLIB_TARGET}/libcurl.lib) 
-	set(CLIENT_INCLUDE_DIRS 
-		${CMAKE_SOURCE_DIR}/third_party/include) 
-else()
-	include(FindCURL)
-	include(FindOpenSSL)
-
-	if(NOT CURL_FOUND)
-		message(FATAL_ERROR "Could not find curl")
-	endif()
-
-	if(NOT OPENSSL_FOUND)
-		message(FATAL_ERROR "Could not find openssl")
-	endif()
-
-	set(CRYPTO_LIBS ${OPENSSL_LIBRARIES})
-	set(CRYPTO_INCLUDE_DIRS ${OPENSSL_INCLUDE_DIRS}) 
-	set(CRYPTO_LIBS_ABSTRACT_NAME crypto ssl)
-
-	set(CLIENT_LIBS ${CURL_LIBRARIES})
-	set(CLIENT_INCLUDE_DIRS ${CURL_INCLUDE_DIRS}) 
-	set(CLIENT_LIBS_ABSTRACT_NAME curl)
+if(NOT CURL_FOUND)
+    message(FATAL_ERROR "Could not find curl")
 endif()
 
+if(NOT OPENSSL_FOUND)
+    message(FATAL_ERROR "Could not find openssl")
+endif()
+
+set(CRYPTO_LIBS ${OPENSSL_LIBRARIES})
+set(CRYPTO_INCLUDE_DIRS ${OPENSSL_INCLUDE_DIRS}) 
+set(CRYPTO_LIBS_ABSTRACT_NAME crypto ssl)
+
+set(CLIENT_LIBS ${CURL_LIBRARIES})
+set(CLIENT_INCLUDE_DIRS ${CURL_INCLUDE_DIRS}) 
+set(CLIENT_LIBS_ABSTRACT_NAME curl)
+
 #Compiler flags
-list(APPEND SDK_COMPILER_FLAGS "-std=c++11")
+#list(APPEND SDK_COMPILER_FLAGS "-std=c++11")
 if(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
 	list(APPEND SDK_COMPILER_FLAGS "/MP")
 	if (NOT ENABLE_RTTI)

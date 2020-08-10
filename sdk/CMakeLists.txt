@@ -122,13 +122,6 @@ file(GLOB sdk_src
     ${sdk_external_json_src}
     ${sdk_external_tinnyxml2_src}
 )
-
-#extra define pass to source code
-if (BUILD_TESTS)
-    set(EXTRA_DEFINE "-DENABLE_OSS_TEST")
-else()
-    set(EXTRA_DEFINE "")
-endif()
     
 #static lib
 add_library(${PROJECT_NAME}${STATIC_LIB_SUFFIX} STATIC
@@ -152,6 +145,9 @@ target_include_directories(${PROJECT_NAME}${STATIC_LIB_SUFFIX}
 target_include_directories(${PROJECT_NAME}${STATIC_LIB_SUFFIX}
     PRIVATE ${CRYPTO_INCLUDE_DIRS}
     PRIVATE ${CLIENT_INCLUDE_DIRS})
+
+target_compile_features(${PROJECT_NAME}${STATIC_LIB_SUFFIX}
+    PRIVATE cxx_std_11)
 
 target_compile_options(${PROJECT_NAME}${STATIC_LIB_SUFFIX} 
     PRIVATE "${SDK_COMPILER_FLAGS}" "${EXTRA_DEFINE}")
